@@ -1,0 +1,84 @@
+#!/usr/bin/python3
+''' Check for unassigned tickets in Zendesk and set notifications in PRTG. '''
+# if your python3 location is elsewhere, run: whereis python3 via cli & edit the line accordingly
+
+import requests
+
+# config for your environment
+ZEN_API = 'https://YOUR_USERNAME.zendesk.com/api/v2/search.json?query=assignee:none'
+ZEN_USER = 'YOUR-AGENT-EMAIL@EXAMPLE.COM/token'
+ZEN_TOKEN = 'vdshFhjhujiGUIHGDSG..YOUR_TOKEN..DGSHFGxhss'
+# prtg data (from prtg sensor dashboard)
+PRTG_URL = 'https://YOUR_PRTG_DOMAIN'
+PRTG_PORT = '5051'
+PRTG_TOKEN = '45f4s55s4fs-YOUR_TOKEN-sf2c1vwzry8'
+CHANNEL = 'Unassigned'  # prtg will create it on first run
+
+def check_tickets():
+    ''' Make an API call to Zendesk & check for unassigned tickets '''
+    # check the http status coming from zendesk
+    zen_status = requests.get(ZEN_API, auth=(ZEN_USER, ZEN_TOKEN))
+
+    # check for http errors
+    if zen_status.status_code != 200:
+        print('Status:', zen_status.status_code, 'Check your settings and try again.')
+        exit()
+
+    # split the json response into dictionaries and use as vars
+    ticket = zen_status.json()
+    total = ticket['count']
+    if total != '0':
+        alert_message = 'New ticket:  ' + str(ticket['results'][0]['subject'])
+    else:
+        alert_message = 'All current tickets have been assigned'
+
+    # for cli debugging
+    print('Total unassigned: ', total)
+    print('Message for PRTG: ', alert_message)
+
+    # compile the alert data for dispatch to prtg
+    send_alert(alert_message, CHANNEL, total)
+
+
+def send_alert(message, channel, total):
+
+    ''' Initialize the alert '''
+
+    # do a push
+    import json
+    import urllib3
+
+    # ignore InsecureRequestWarning
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+    prtg_payload_url = PRTG_URL + ':' + PRTG_PORT + '/' + PRTG_TOKEN
+
+    # target channel
+    payload = {
+        "prtg": {
+            "result": [
+                {
+                    "channel": channel,
+                    "value": total
+                }
+            ],
+            "text": message
+        }
+    }
+
+    header = {'content-type': 'application/json'}
+
+    # post the data to prtg
+    response = requests.post(
+        prtg_payload_url,
+        data=json.dumps(payload),
+        headers=header,
+        verify=False # disable self-signed warnings
+    )
+
+    # if we get a 200 from prtg, echo via cli (for testing purposes)
+    print("API response from PRTG: {}".format(response.status_code))
+
+# launch the ticket checker by default on script run
+if __name__ == '__main__':
+    check_tickets()
