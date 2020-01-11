@@ -49,12 +49,12 @@ Get your Zendesk API token, so you aren't hardcoding a password in your script.
 4. RUN **zendesk_notifier** via CLI: `/path/to/zendesk_notifier` or `./zendesk_notifier` (if your terminal is already focused in the git directory) to create the sensor
 
 5. Go into the channel settings (click the wheel icons) and set your thresholds:
-  - 	**Unit:** ticket(s)
-  - 	**Scaling Multiplication:** 1
-  - 	**Scaling Division:** 1
-  - 	[x] Enable alerting based on limits
-  -   **Upper Error Limit:** 2
-  - 	**Lower Warning Limit:** 0.2 *(It didn't register as a warning with 1 - not yet sure if its a bug with the script, or PRTG)*
+    - 	**Unit:** ticket(s)
+    - 	**Scaling Multiplication:** 1
+    - 	**Scaling Division:** 1
+    - 	[x] Enable alerting based on limits
+    - 	**Upper Error Limit:** 2
+    - 	**Lower Warning Limit:** 0.2 *(It didn't register as a warning with 1 - not yet sure if its a bug with the script, or PRTG)*
 
 6. Set up the cron on the Linux-based server; as a non-root user, run: `crontab -e` and add the following line:
 
