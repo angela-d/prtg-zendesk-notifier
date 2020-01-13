@@ -27,7 +27,7 @@ def check_tickets():
     # split the json response into dictionaries and use as vars
     ticket = zen_status.json()
     total = ticket['count']
-    if total != '0':
+    if total != 0:
         alert_message = 'New ticket:  ' + str(ticket['results'][0]['subject'])
     else:
         alert_message = 'All current tickets have been assigned'
